@@ -1,0 +1,30 @@
+﻿
+@{
+    ViewBag.Title = "Invoice Report";
+    Layout = null;
+ }
+<md-dialog id="InvoiceReport" max-width="800" aria-label="joblineItem detail dialog">
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h1>AP Transmittal Report</h1>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>        
+        <div layout="row" layout-padding layout-align="start center">
+            <object data="{{PDFreportContent}}" type="application/pdf" height="800" width="600" />
+        </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>  <!--Call another method here -->
+            <md-button class="md-raised md-primary md-button md-ink-ripple" ng-click="GoTransmittedAP();closeDetailDialog()">
+                Commit
+            </md-button>
+            <md-button class="md-raised md-primary md-button md-ink-ripple" ng-click="closeDetailDialog()">
+                Cancel
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
+

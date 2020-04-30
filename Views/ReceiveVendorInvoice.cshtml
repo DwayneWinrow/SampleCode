@@ -1,0 +1,166 @@
+﻿ 
+@{
+    ViewBag.Title = "ReceiveVendorInvoice";
+    Layout = null;
+}
+<div layout="column" layout-padding>
+    <!--Assign To Section-->
+    <h1 class="md-title">
+        Receive Vendor Invoice&nbsp;&nbsp;&nbsp;<label ng-style="editLabel">Edit Mode</label>
+    </h1>
+    <form id="frmReceiveVendorInvoice" name="frmReceiveVendorInvoice">
+        <div layout="row" ng-init="loadPOHeaders()" style="height:70px;" >
+            <md-input-container flex="30" flex-xs="50" ng-keypress="searchKeyPress()">
+                <label>PO Number:</label>
+                <md-autocomplete md-input-name="idPOHeaderTypeAhead" md-input-maxlength="30" placeholder="Enter PO Number"
+                                 ng-disabled=""
+                                 md-min-length="3"
+                                 md-search-text="poSearchText"
+                                 md-items="PONumberResults in POHeaderSearch(poSearchText)"
+                                 md-item-text="PONumberResults.poNumber"
+                                 require="true">
+                    <md-item-template>
+                        <span md-highlight-text="poSearchText">{{PONumberResults.poNumber}}</span>
+                    </md-item-template>
+                    <md-not-found>
+                        No matching PONumber not found
+                    </md-not-found>
+                </md-autocomplete>
+                <div ng-messages="frmReceiveVendorInvoice.idPONumberTypeAhead.$error">
+                    <div ng-message="required">This field is required!</div>
+                    <div ng-message="maxlength">Your entry is too long.</div>
+                </div>
+            </md-input-container>
+            <md-input-container>
+                <md-button class="md-fab md-mini md-primary" ng-click="LineItemByPOId(poSearchText)">
+                    <md-tooltip md-direction="top">
+                        Click for PO LineItem List
+                    </md-tooltip>
+                    <md-icon>search</md-icon>
+                </md-button>
+            </md-input-container>
+            <md-input-container flex="15" flex-xs="30">
+                <label>Invoice Number:</label>
+                <input id="invoiceNumber" name="invoiceNumber" maxlength="15" ng-model="PublishInvoice.invoiceNumber">
+                <div ng-messages="frmReceiveVendorInvoice.invoiceNumber.$error" ng-show="invoiceNumber.$dirty">
+                    <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+            <div flex="30" flex-xs="50">
+                <label>Invoice Date:</label>
+                <md-datepicker id="invoiceDate" 
+                               name="invoiceDate" 
+                               @*md-min-date="minDate"*@
+                               md-max-date="maxDate"
+                               ng-model="PublishInvoice.invoiceDate" />
+            
+                <div ng-messages="frmReceiveVendorInvoice.invoiceDate.$error" ng-show="invoiceDate.$dirty">
+                    <div ng-message="required">This is required.</div>
+                </div>
+            </div>
+        </div>
+        <div layout="row">
+            <label style="color:#6B7A89">Vendor Name: </label><label>{{PublishInvoice.vendorName}}</label>
+        </div>
+        <div layout="row" layout-padding style="overflow-x: auto;">
+            <md-table-container id="vendorInvoice" hide-xs>
+                <table md-table md-row-select multiple border="0" ng-model="selectedLineItems">
+                    <thead md-head>
+                        <tr md-row>
+                            <th md-column>Part Number</th>
+                            <th md-column>Type</th>
+                            <th md-column>Description</th>
+                            <th md-column>PO Order Qty</th>
+                            <th md-column>UOM</th>
+                            <th md-column>Unit Cost</th>
+                            <th md-column>Received Qty</th>
+                            <th md-column style="width:25px">Left To Invoice Qty</th>
+                            <th md-column>Invoice Qty</th>
+                            <th md-column style="text-align:right">Total Price</th>
+                            <th hidden="hidden" md-column>Record ID</th>
+                            <th hidden="hidden" md-column>Related Price Level</th>
+                            <th hidden="hidden" md-column>Related Vendor</th>
+                            <th hidden="hidden" md-column>Accrual Status</th>
+                        </tr>
+                    </thead>
+                    <tbody md-body>
+                        <tr md-row
+                            md-select="poLineItemReceiptsResult"
+                            md-on-deselect="poLineItemReceiptDeselected"
+                            md-on-select="poLineItemReceiptSelected"
+                            ng ng-repeat="poLineItemReceiptsResult in PublishInvoice.poLineItemReceiptsResults">
+                            <td md-cell>{{poLineItemReceiptsResult.partNumber}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.type}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.itemDescription}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.qtyOrdered}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.uom}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.unitCost | currency}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.qtyReceiptReceived}}</td>
+                            <td md-cell>{{poLineItemReceiptsResult.qtyInvoiceLeft}}</td>
+                            <td md-cell><input name="txtQty2BeInvoiced" id="txtQty2BeInvoiced" type="number" ng-model="poLineItemReceiptsResult.qty2BeInvoiced" ng-change="calculateTotal()" style="width:90px;text-align:right" /></td>
+                            <td md-cell style="text-align:right;">{{poLineItemReceiptsResult.totalPOAmount | currency}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="invoiceWrapper">
+                                <input class="ng-hide" id="invoiceFile" type="file" accept="application/pdf"  />
+                                <md-button id="showFileButton" class="md-raised md-primary md-button md-ink-ripple" ng-click="showFile();">
+                                    Upload Invoice File
+                                    <md-icon>folder</md-icon>
+                                </md-button>
+                                    </div>
+                               </td>
+                            <td>
+                             <label ng-style="disableLabel" style="font-weight:400;">Selected File =></label>
+                            </td>
+                            <td colspan="5">
+                                <label ng-style="disableLabel" style="font-weight:800;color:#6B7A89">{{selectedFileName}}</label> 
+                            </td>
+                            <td colspan="2" align="right">
+                                <label>Sub Total:</label>
+                            </td>
+                            <td align="right">
+                                <input id="subTotal" name="subTotal" type="text" ng-disabled="true" style="font-weight:400;color:darkgreen;text-align:right" ng-model="subTotalDisplay">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="10" align="right">
+                                <label>Shipping/Freight:</label>
+                            </td>
+                            <td align="right">
+                                <input id="freightAmount" name="Freight" type="number" step=".01" maxlength="15" style="background-color:white;text-align:right" ng-change="calculateTotal()" ng-model="PublishInvoice.freightAmount">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="10" align="right">
+                                <label>Tax:</label>
+                            </td>
+                            <td align="right">
+                                 <input id="taxAmount" name="Tax" maxlength="15" step=".01" type="number" style="background-color:white;text-align:right" ng-change="calculateTotal()" ng-model="PublishInvoice.taxAmount">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="10" align="right">
+                                <label>Invoice Total:</label>
+                            </td>
+                            <td  align="right">
+                                  <input id="poAmount" name="poAmount" type="text" ng-disabled="true" style="font-weight:400;color:darkgreen;text-align:right" ng-model="poAmountDisplay">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </md-table-container>
+        </div>
+        <section layout="row" layout-sm="column" layout-align="end center" layout-wrap>
+            <div layout="row" layout-align="start center" flex>
+                <md-button class="md-raised md-primary md-button md-ink-ripple" ng-disabled="disableAction()" ng-click="applyInvoice(PublishInvoice)">
+                    Apply Invoice
+                </md-button>
+                <md-button class="md-raised md-warn md-button md-ink-ripple" ng-click="refresh(true)">
+                    Refresh
+                </md-button>
+                <span flex></span>
+            </div>
+        </section>
+     </form>
+</div>

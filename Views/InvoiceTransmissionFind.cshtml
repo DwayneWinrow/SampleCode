@@ -1,0 +1,56 @@
+﻿
+@{
+    ViewBag.Title = "Invoice Tranmission Search";
+    Layout = null;
+}
+<md-dialog id="InvoiceTranmissionSearch" max-width="800" aria-label="joblineItem detail dialog">
+    <form id="fInvoiceTranmissionSearch" name="fInvoiceTranmissionSearch">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h1>AP Transmitted Invoice Report</h1>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div layout="row" layout-padding layout-align="start center">
+                <md-input-container flex="30" flex-xs="50">
+                    <label>Vendor:</label>
+                    <md-select id="Vendors" ng-model="TransmittedReport.vendorId" placeholder="Select a Vendor">
+                        <md-option ng-value="VendorsResult.vendorId" ng-repeat="VendorsResult in VendorsResults">{{VendorsResult.vendorName}}</md-option>
+                    </md-select>
+                </md-input-container>
+               <div flex="30" flex-xs="50">
+                    <label>Begin Date:</label>
+                    <md-datepicker id="invoiceBeginDate" name="invoiceBeginDate" ng-model="TransmittedReport.beginDate" />
+                </div>
+            </div>
+            <div layout="row" layout-padding layout-align="start center">
+                <md-input-container flex="30" flex-xs="50">
+                    <label>PO Number:</label>
+                    <md-select id="PONumber" ng-model="TransmittedReport.poNumber" placeholder="Select PO Number">
+                        <md-option ng-value="POResult.poNumber" ng-repeat="POResult in POResults">{{POResult.poNumber}}</md-option>
+                    </md-select>
+                </md-input-container>
+                <div flex="30" flex-xs="50">
+                    <label>End Date:</label>
+                    <md-datepicker id="invoiceEndDate" name="invoiceEndDate" ng-model="TransmittedReport.endDate" />
+                </div>
+            </div>
+            <div layout="row" layout-padding layout-align="start center">
+                <md-button class="md-raised md-primary md-button md-ink-ripple" ng-click="runTransReport()">
+                    Generate Report
+                    </md-button>
+                 </div>
+                <div layout="row" layout-padding layout-align="start center">
+                    <object data="{{PDFAPReport}}" type="application/pdf" height="400" width="500" />
+                </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>  <!--Call another method here -->
+            <md-button class="md-raised md-primary md-button md-ink-ripple"  ng-click="closeDetailDialog()">
+                Cancel
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
+

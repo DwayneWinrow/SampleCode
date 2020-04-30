@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = "AccountPayable";
+    Layout = null;
+}
+
+<md-tabs md-dynamic-height md-border-bottom id="ApVendorInvoiceTabs" md-selected="selectedTab">
+    <md-tab id="rvi" label="Receive Vendor Invoice"  md-on-select="TabService.displayTab('ap.rvi')" >
+    </md-tab>
+    <md-tab id="taf" label="Transmit AP File"  md-on-select="TabService.displayTab('ap.taf')" >
+    </md-tab>
+</md-tabs>
+<div ui-view></div>
+

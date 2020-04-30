@@ -1,0 +1,194 @@
+﻿
+@{
+    ViewBag.Title = "TransmitAPFile";
+    Layout = null;
+}
+
+<div layout="column" layout-padding>
+    <!--Assign To Section-->
+    <h3 class="md-title">
+        Transmit AP File
+    </h3>
+    <md-content>
+        <md-tabs md-dynamic-height md-border-bottom>
+            <md-tab id="tabRft" label="Ready for transmit" ng-click="ready2TransmittedAPSearch(false)" ng-init="ready2TransmittedAPSearch(false);getAPUsers()">
+                <md-content class="md-padding">
+                    <md-input-container flex="40" flex-xs="60" ng-keypress="searchKeyPressR()">
+                        <label>Enter Invoice or PONumber</label>
+                        <md-autocomplete ng-disabled="disableInput()"
+                                         md-search-text="invoiceNumberSearch0"
+                                         md-items=""
+                                         md-item-text=""
+                                         ng-model="selectedVendor">
+                            <md-item-template>
+                                <span md-highlight-text="invoiceSearchText">{{invoiceNumber}}</span>
+                            </md-item-template>
+                            <md-not-found>
+                                No matching Site found
+                            </md-not-found>
+                        </md-autocomplete>
+                    </md-input-container>
+                    <md-input-container>
+                        <md-button class="md-fab md-mini md-primary" ng-click="Ready2TransmittedByInvoiceNumberAP()">
+                            <md-tooltip md-direction="top">
+                                Click for Search Invoice
+                            </md-tooltip>
+                            <md-icon>search</md-icon>
+                        </md-button>
+                    </md-input-container>
+                    <md-input-container style="margin-right: 10px;">
+                        <div layout="row">
+                            <label>Users</label>
+                            <md-select ng-model="APuserIdR" ng-change="Ready2TransmittedByInvoiceNumberAP()">
+                                <md-option ng-repeat="APUserResult in APUserResults" value="{{APUserResult.lastUpdateUserId}}">{{APUserResult.lastUpdateUserId}}</md-option>
+                            </md-select>
+                            <md-button class="md-raised md-primary md-button md-ink-ripple" style="height:20px" ng-click="PreviewAPReport()"
+                                       ng-disabled="selectedReady2Transmit.length == 0">
+                                Transmit AP File
+                            </md-button>
+                            <md-button id="idRefresh" class="md-raised md-warn md-button md-ink-ripple" style="height:20px" ng-click="ready2TransmittedAPSearch(false)"
+                                       ng-disabled="">
+                                Refresh
+                            </md-button>
+                            </div>
+                    </md-input-container>
+                    <div layout="row" layout-padding>
+                        <md-table-container id="apTransmit" hide-xs >
+                            <table md-table md-row-select multiple ng-model="selectedReady2Transmit" md-progress="promise">
+                                <thead md-head md-order="query.order" md-on-reorder="reorderItemsR">
+                                    <tr md-row>
+                                        <th md-column md-order-by="invoiceNumber">Invoice No.</th>
+                                        <th md-column md-order-by="invoiceAmount">Invoice Amount</th>
+                                        <th md-column md-order-by="vendorName">Vendor Name</th>
+                                        <th md-column md-order-by="vendorId">Vendor Id</th>
+                                        <th md-column md-order-by="poNumber">PO Number</th>
+                                        <th md-column md-order-by="invoiceDate">Invoice Date</th>
+
+                                        <th md-column ng-if="userService.authorizer.isInRoleAPManager('TransmitAPFile.cshtml')"></th>
+                                     
+                                    </tr>
+                                </thead>
+                                <tbody md-body>
+                                    <tr md-row md-select="ready2TransmittedResult" ng-repeat="ready2TransmittedResult in ready2TransmittedResults">
+                                        <td md-cell>{{ready2TransmittedResult.invoiceNumber}}</td>
+                                        <td md-cell>{{ready2TransmittedResult.invoiceAmount | currency}}</td>
+                                        <td md-cell>{{ready2TransmittedResult.vendorName}}</td>
+                                        <td md-cell>{{ready2TransmittedResult.vendorId}}</td>
+                                        <td md-cell>{{ready2TransmittedResult.poNumber}}</td>
+                                        <td md-cell>{{ready2TransmittedResult.invoiceDate | date}}</td>
+                                        @*<td md-cell>
+                                            <md-button class="md-fab md-mini md-primary" ng-click="editInvoice(ready2TransmittedResult)">
+                                                <md-tooltip md-direction="top">
+                                                    Edit Invoice
+                                                </md-tooltip>
+                                                <md-icon>edit</md-icon>
+                                            </md-button>
+                                        </td>*@
+                                    
+                                        <td md-cell ng-if="userService.authorizer.isInRoleAPManager('TransmitAPFile.cshtml')">
+                                            <md-button class="md-fab md-mini md-primary" ng-click="deleteInvoice(ready2TransmittedResult);">
+                                                <md-tooltip md-direction="top">
+                                                    Delete Invoice
+                                                </md-tooltip>
+                                                <md-icon>delete</md-icon>
+                                            </md-button>
+                                        </td>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </md-table-container>
+                    </div>
+                    <!--Footer Actions Section-->
+                    <div layout="row">
+                        <md-button class="md-raised md-primary md-button md-ink-ripple" ng-click="PreviewAPReport()"
+                                   ng-disabled="selectedReady2Transmit.length == 0">
+                            Transmit AP File
+                        </md-button>
+                        <md-button id="idRefresh" class="md-raised md-warn md-button md-ink-ripple" ng-click="ready2TransmittedAPSearch(false)"
+                                   ng-disabled="">
+                            Refresh
+                        </md-button>
+                    </div>
+                    <div layout="row" id="TotalSelectedRow">
+                        Total Selected: ({{selectedReady2Transmit.length}}) of ({{ready2TransmittedResults.length}})
+                    </div> 
+                </md-content>
+            </md-tab>
+            <md-tab id="tabLft" label="Transmitted">
+                <md-content class="md-padding">
+                    <md-input-container flex="40" flex-xs="60" ng-keypress="searchKeyPressT()">
+                        <label>Enter Invoice or PONumber</label>
+                        <md-autocomplete ng-disabled="disableInput()"
+                                         md-search-text="invoiceNumberSearch1"
+                                         md-items=""
+                                         md-item-text=""
+                                         ng-model="selectedVendor">
+                            <md-item-template>
+                                <span md-highlight-text="invoiceSearchText">{{invoiceNumber}}</span>
+                            </md-item-template>
+                            <md-not-found>
+                                No Matching Site found
+                            </md-not-found>
+                        </md-autocomplete>
+                    </md-input-container>
+                    <md-input-container>
+                        <md-button class="md-fab md-mini md-primary" ng-click="TransmittedByInvoiceNumberAP()">
+                            <md-tooltip md-direction="top">
+                                Click for Search Invoice
+                            </md-tooltip>
+                            <md-icon>search</md-icon>
+                        </md-button>
+                    </md-input-container>
+                    <md-input-container style="margin-right: 10px;">
+                        <label>Users</label>
+                        <md-select ng-model="APuserIdT" ng-change="TransmittedByInvoiceNumberAP()">
+                            <md-option ng-repeat="APUserResult in APUserResults" value="{{APUserResult.lastUpdateUserId}}">{{APUserResult.lastUpdateUserId}}</md-option>
+                        </md-select>
+                    </md-input-container>
+                    <div layout="row" layout-padding>
+                        <md-table-container id="apResetTransmit" hide-xs>
+                            <table md-table md-row-select multiple ng-model="selectedTransmitted" md-progress="promise">
+                                <thead md-head md-order="query.order" md-on-reorder="reorderItemsT">
+                                    <tr md-row>
+                                        <th md-column md-order-by="invoiceNumber">Invoice No.</th>
+                                        <th md-column md-order-by="invoiceAmount">Invoice Amount</th>
+                                        <th md-column md-order-by="vendorName">Vendor Name</th>
+                                        <th md-column md-order-by="vendorId">Vendor Id</th>
+                                        <th md-column md-order-by="poNumber">PO Number</th>
+                                        <th md-column md-order-by="transmitDate">Transmit Date</th>
+                                        <th md-column md-order-by="invoiceDate">Invoice Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody md-body>
+                                    <tr md-row md-select="transmittedResult" ng-repeat="transmittedResult in transmittedResults">
+                                        <td md-cell>{{transmittedResult.invoiceNumber}}</td>
+                                        <td md-cell>{{transmittedResult.invoiceAmount | currency}}</td>
+                                        <td md-cell>{{transmittedResult.vendorName}}</td>
+                                        <td md-cell>{{transmittedResult.vendorId}}</td>
+                                        <td md-cell>{{transmittedResult.poNumber}}</td>
+                                        <td md-cell>{{transmittedResult.transmitDate | date}}</td>
+                                        <td md-cell>{{transmittedResult.invoiceDate | date}}</td>
+                                       </tr>
+                                </tbody>
+                            </table>
+                        </md-table-container>
+                    </div>
+                    <!--Footer Actions Section-->
+                    <div layout="row">
+                        <md-button class="md-raised md-primary md-button md-ink-ripple" ng-click="launchTransReport()"
+                                   ng-disabled="">
+                            Run Report
+                        </md-button>
+                        <md-button class="md-raised md-warn md-button md-ink-ripple"  ng-click="transmittedAPSearch(true)"
+                                   ng-disabled="">
+                            Refresh
+                        </md-button>
+                    </div>
+                </md-content>
+            </md-tab>
+        </md-tabs>
+</div>
+
+
+
